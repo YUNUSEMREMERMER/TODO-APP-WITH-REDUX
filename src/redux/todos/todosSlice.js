@@ -1,38 +1,29 @@
-import { createSlice, nanoid } from "@reduxjs/toolkit";
+import { createSlice, nanoid, createAsyncThunk } from "@reduxjs/toolkit";
+import axios from "axios";
+
+export const getTodosAsync = createAsyncThunk("todos/getTodosAsync", async () => {
+    const res = await (await axios("http://localhost:8080/api/todos/getall")).data;
+    return res.data;
+});
+
+export const addTodoAsync = createAsyncThunk("todos/addTodoAsync", async (title) => {
+    const todo = {
+        "id":nanoid(),
+        "completed":false,
+        "title":title,
+    }
+    
+    const res = await axios.post("http://localhost:8080/api/todos/add",todo);
+    return res.data.data;
+});
 
 export const todosSlice = createSlice({
     name: "todos",
     initialState: {
-        items:[
-            {
-                id:"1",
-                title:"ödev1 yap",
-                completed:true
-            },
-            {
-                id:"2",
-                title:"ödev2 yap",
-                completed:false
-            }
-        ],
+        items: [],
         activeFilter:"all"
     },
     reducers:{
-        addTodo: {
-            reducer: (state, action) => {
-                state.items.push(action.payload);
-                
-            },
-            prepare: ({ title }) => {
-                return {
-                    payload: {
-                        id:nanoid(),
-                        completed:false,
-                        title,
-                    }
-                }
-            }
-        },
         toggle: (state, action) => {
             const {id} = action.payload;
             const item = state.items.find(item => item.id === id)
@@ -51,6 +42,15 @@ export const todosSlice = createSlice({
             state.items = filtered
         }
     },
+    extraReducers: {
+        [getTodosAsync.fulfilled]: (state, action) => {
+            state.items = action.payload;
+        },
+
+        [addTodoAsync.fulfilled]: (state, action) => {
+            state.items.push(action.payload);
+        }
+    }
 });
 
 export const selectFilteredTodos = (state) => {
@@ -62,5 +62,5 @@ export const selectFilteredTodos = (state) => {
 }
 
 export const selectTodos = (state) => state.todos.items;
-export const { addTodo, toggle, destroy, changeActiveFilter, clearCompleted} = todosSlice.actions
+export const { toggle, destroy, changeActiveFilter, clearCompleted} = todosSlice.actions
 export default todosSlice.reducer;

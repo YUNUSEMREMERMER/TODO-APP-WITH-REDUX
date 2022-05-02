@@ -36,3 +36,19 @@
     transform: rotate(360deg);
   }
 }
+.navigation{
+  background-color: #1976d2;
+  color: white;
+  height: 30px;
+  display: flex;
+  justify-content: end;
+  align-items: center;
+}
+.navigation > Button{
+  
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+}
